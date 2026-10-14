@@ -1,0 +1,25 @@
+# /etc/systemd/system/challenge.service: how your server runs on the benchmark box.
+#
+# /opt/challenge/current is a symlink to your submission folder, built there by `challenge` with build.sh.
+# /etc/challenge/env holds DATABASE_URL, JWT_SECRET, HOST and PORT (SPEC.md, "Runtime contract").
+# Restart=no on purpose: a crash during a run shows up as errors in the results. No CPU or memory limits.
+[Unit]
+Description=Multicore server challenge submission
+After=network.target postgresql.service nginx.service
+
+[Service]
+Type=simple
+User=challenge
+Group=challenge
+WorkingDirectory=/opt/challenge/current
+EnvironmentFile=/etc/challenge/env
+Environment=HOME=/home/challenge
+ExecStart=/opt/challenge/current/start.sh
+Restart=no
+LimitNOFILE=200000
+# lets a direct submission bind port 80 without running as root
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+StandardOutput=journal
+StandardError=journal
+TimeoutStopSec=20
+KillMode=mixed

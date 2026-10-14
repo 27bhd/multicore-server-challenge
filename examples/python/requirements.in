@@ -1,0 +1,5 @@
+fastapi~=0.143.0
+uvicorn[standard]
+asyncpg
+bcrypt
+PyJWT

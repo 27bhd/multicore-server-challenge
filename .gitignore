@@ -1,0 +1,4 @@
+seed/data-*/
+seed/.seedgen
+results/
+.DS_Store

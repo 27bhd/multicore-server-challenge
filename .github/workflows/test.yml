@@ -1,0 +1,62 @@
+# Runs every submission (and example) a pull request adds or changes through test/run.sh on a clean Ubuntu 24.04,
+# against Postgres 18 and the 2% dev seed.
+name: test submissions
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:   # re-tests every submission and example
+permissions:
+  contents: read
+
+jobs:
+  find:
+    runs-on: ubuntu-24.04
+    outputs:
+      dirs: ${{ steps.dirs.outputs.dirs }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - id: dirs
+        run: |
+          all() { ls -d submissions/*/ examples/*/ 2>/dev/null | sed 's#/$#/x#'; }
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            changed=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+          elif [ "${{ github.event_name }}" = push ] && git rev-parse -q --verify HEAD~1 >/dev/null; then
+            changed=$(git diff --name-only HEAD~1 HEAD)
+          else
+            changed=$(all)
+          fi
+          # a change to shared files (spec, bench, seed, tests, CI) re-tests everything; docs-only changes test nothing extra
+          if echo "$changed" | grep -v '^submissions/\|^examples/' | grep -qv '\.md$\|^LICENSE$\|^box/'; then changed=$(all); fi
+          dirs=$(echo "$changed" | awk -F/ '($1=="submissions" || $1=="examples") && NF>2 {print $1"/"$2}' | sort -u | while read -r d; do [ -d "$d" ] && echo "$d"; done)
+          echo "dirs=$(echo "$dirs" | jq -R . | jq -sc 'map(select(length>0))')" >> "$GITHUB_OUTPUT"
+          echo "testing: $dirs"
+
+  test:
+    needs: find
+    if: needs.find.outputs.dirs != '[]'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: ${{ fromJson(needs.find.outputs.dirs) }}
+    services:
+      postgres:
+        image: postgres:18
+        env: { POSTGRES_PASSWORD: postgres }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 2s --health-timeout 5s --health-retries 30
+    env: { PGHOST: 127.0.0.1, PGPORT: 5432, PGUSER: postgres, PGPASSWORD: postgres }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version-file: bench/go.mod, cache-dependency-path: bench/go.sum }
+      - name: tools
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client curl jq
+      - name: seed
+        run: bash seed/make-seed.sh --dev
+      - name: install.sh
+        run: sudo bash ${{ matrix.dir }}/install.sh
+      - name: build, start, test
+        run: bash test/run.sh ${{ matrix.dir }}

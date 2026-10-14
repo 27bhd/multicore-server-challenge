@@ -1,0 +1,18 @@
+[package]
+name = "conduit"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+axum = "0.8"
+tokio = { version = "1", features = ["full"] }
+# No TLS feature: Postgres is on localhost, so no OpenSSL/rustls is linked.
+sqlx = { version = "0.9", default-features = false, features = ["postgres", "runtime-tokio", "chrono", "derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# jsonwebtoken 10+ requires picking a crypto backend; rust_crypto is pure Rust (no C toolchain/cmake).
+jsonwebtoken = { version = "11", features = ["rust_crypto"] }
+bcrypt = "0.19"
+chrono = { version = "0.4", default-features = false, features = ["std"] }
+form_urlencoded = "1"
