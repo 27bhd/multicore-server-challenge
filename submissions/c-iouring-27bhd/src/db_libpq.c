@@ -86,9 +86,9 @@ bool db_init_statements(db_conn_t *db) {
     ok &= prep(c, "get_user", SQL_GET_USER);
     ok &= prep(c, "update_user", SQL_UPDATE_USER);
     ok &= prep(c, "get_profile", SQL_GET_PROFILE);
-    ok &= prep(c, "get_profile_u", SQL_GET_PROFILE_USER);
-    ok &= prep(c, "ins_follow", SQL_INSERT_FOLLOW);
-    ok &= prep(c, "del_follow", SQL_DELETE_FOLLOW);
+    ok &= prep(c, "follow_u", SQL_FOLLOW_BY_USERNAME);
+    ok &= prep(c, "unfollow_u", SQL_UNFOLLOW_BY_USERNAME);
+
     ok &= prep(c, "list_all", SQL_LIST_ALL);
     ok &= prep(c, "count_all", SQL_COUNT_ALL);
     ok &= prep(c, "list_by_tag", SQL_LIST_BY_TAG);
@@ -99,6 +99,7 @@ bool db_init_statements(db_conn_t *db) {
     ok &= prep(c, "count_by_fav", SQL_COUNT_BY_FAVORITE);
     ok &= prep(c, "list_feed", SQL_LIST_FEED);
     ok &= prep(c, "count_feed", SQL_COUNT_FEED);
+
     ok &= prep(c, "list_all_10_0", SQL_LIST_ALL_10_0);
     ok &= prep(c, "list_all_5_0", SQL_LIST_ALL_5_0);
     ok &= prep(c, "list_all_20_0", SQL_LIST_ALL_20_0);
@@ -116,33 +117,19 @@ bool db_init_statements(db_conn_t *db) {
     ok &= prep(c, "list_feed_20_0", SQL_LIST_FEED_20_0);
 
     ok &= prep(c, "art_by_slug", SQL_ARTICLE_BY_SLUG);
-    ok &= prep(c, "art_by_id", SQL_ARTICLE_BY_ID);
     ok &= prep(c, "ins_art", SQL_INSERT_ARTICLE);
     ok &= prep(c, "ins_tags", SQL_INSERT_TAGS);
-    ok &= prep(c, "ins_art_tags", SQL_INSERT_ARTICLE_TAGS);
-    ok &= prep(c, "sel_art_auth", SQL_SELECT_ARTICLE_AUTH);
-    ok &= prep(c, "upd_art", SQL_UPDATE_ARTICLE);
-    ok &= prep(c, "upd_art_fused", SQL_UPDATE_ARTICLE_FUSED);
-
-    ok &= prep(c, "del_art", SQL_DELETE_ARTICLE);
-    ok &= prep(c, "sel_art_id", SQL_SELECT_ARTICLE_ID);
-    ok &= prep(c, "ins_fav", SQL_INSERT_FAVORITE);
-    ok &= prep(c, "del_fav", SQL_DELETE_FAVORITE);
-    ok &= prep(c, "list_comments", SQL_LIST_COMMENTS);
-    ok &= prep(c, "list_comm_slug", SQL_LIST_COMMENTS_BY_SLUG);
-
-    ok &= prep(c, "ins_comment", SQL_INSERT_COMMENT);
-    ok &= prep(c, "sel_comm_auth", SQL_SELECT_COMMENT_AUTH);
-    ok &= prep(c, "del_comment", SQL_DELETE_COMMENT);
     ok &= prep(c, "ins_art_tags_currval", SQL_INSERT_ARTICLE_TAGS_CURRVAL);
     ok &= prep(c, "art_by_currval", SQL_ARTICLE_BY_CURRVAL);
+    ok &= prep(c, "upd_art_fused", SQL_UPDATE_ARTICLE_FUSED);
     ok &= prep(c, "del_art_cte", SQL_DELETE_ARTICLE_CTE);
-    ok &= prep(c, "del_comment_cte", SQL_DELETE_COMMENT_CTE);
-    ok &= prep(c, "ins_comment_slug", SQL_INSERT_COMMENT_BY_SLUG);
+
     ok &= prep(c, "fav_ins_slug", SQL_FAVORITE_INSERT_BY_SLUG);
     ok &= prep(c, "fav_del_slug", SQL_FAVORITE_DELETE_BY_SLUG);
-    ok &= prep(c, "follow_u", SQL_FOLLOW_BY_USERNAME);
-    ok &= prep(c, "unfollow_u", SQL_UNFOLLOW_BY_USERNAME);
+    ok &= prep(c, "sel_art_id", SQL_SELECT_ARTICLE_ID);
+    ok &= prep(c, "list_comm_slug", SQL_LIST_COMMENTS_BY_SLUG);
+    ok &= prep(c, "ins_comment_slug", SQL_INSERT_COMMENT_BY_SLUG);
+    ok &= prep(c, "del_comment_cte", SQL_DELETE_COMMENT_CTE);
 
     return ok;
 }

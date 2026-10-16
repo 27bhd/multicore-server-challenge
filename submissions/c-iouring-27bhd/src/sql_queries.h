@@ -54,7 +54,6 @@
 
 
 #define SQL_ARTICLE_BY_SLUG ARTICLE_FULL_SELECT " WHERE a.slug = $2"
-#define SQL_ARTICLE_BY_ID   ARTICLE_FULL_SELECT " WHERE a.id = $2"
 #define SQL_ARTICLE_BY_CURRVAL ARTICLE_FULL_SELECT " WHERE a.id = currval(pg_get_serial_sequence('articles', 'id'))"
 #define SQL_INSERT_ARTICLE_TAGS_CURRVAL "INSERT INTO article_tags (article_id, tag_id) SELECT currval(pg_get_serial_sequence('articles', 'id')), t.id FROM tags t WHERE t.name = ANY($1::text[])"
 
@@ -91,28 +90,13 @@
     "SELECT u.name FROM unnest($1::text[]) AS u(name) " \
     "WHERE NOT EXISTS (SELECT 1 FROM tags t WHERE t.name = u.name) " \
     "ORDER BY u.name ON CONFLICT (name) DO NOTHING"
-#define SQL_INSERT_ARTICLE_TAGS "INSERT INTO article_tags (article_id, tag_id) SELECT $1, t.id FROM tags t WHERE t.name = ANY($2::text[])"
-#define SQL_SELECT_ARTICLE_AUTH "SELECT id, author_id FROM articles WHERE slug = $1"
-#define SQL_UPDATE_ARTICLE "UPDATE articles SET title = COALESCE($2, title), description = COALESCE($3, description), body = COALESCE($4, body), slug = CASE WHEN $2::text IS NULL THEN slug ELSE $5 || '-' || id END, updated_at = now() WHERE id = $1"
-#define SQL_DELETE_ARTICLE "DELETE FROM articles WHERE id = $1"
-
 #define SQL_SELECT_ARTICLE_ID "SELECT id FROM articles WHERE slug = $1"
-#define SQL_INSERT_FAVORITE "INSERT INTO favorites (user_id, article_id) VALUES ($1, $2) ON CONFLICT DO NOTHING"
-#define SQL_DELETE_FAVORITE "DELETE FROM favorites WHERE user_id = $1 AND article_id = $2"
-
-#define SQL_LIST_COMMENTS "SELECT c.id, c.body, c.created_at, c.updated_at, u.username, u.bio, u.image, EXISTS (SELECT 1 FROM follows fo WHERE fo.follower_id = $1 AND fo.followee_id = c.author_id) AS following FROM comments c JOIN users u ON u.id = c.author_id WHERE c.article_id = $2 ORDER BY c.created_at DESC, c.id DESC LIMIT 100"
-#define SQL_INSERT_COMMENT "WITH c AS (INSERT INTO comments (article_id, author_id, body) VALUES ($1, $2, $3) RETURNING id, body, created_at, updated_at, author_id) SELECT c.id, c.body, c.created_at, c.updated_at, u.username, u.bio, u.image FROM c JOIN users u ON u.id = c.author_id"
-#define SQL_SELECT_COMMENT_AUTH "SELECT c.author_id FROM comments c JOIN articles a ON a.id = c.article_id WHERE c.id = $1 AND a.slug = $2"
-#define SQL_DELETE_COMMENT "DELETE FROM comments WHERE id = $1"
 
 #define SQL_REGISTER_USER "INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING id, username, email, bio, image"
 #define SQL_LOGIN_USER "SELECT id, username, email, bio, image, password_hash FROM users WHERE email = $1"
 #define SQL_GET_USER "SELECT id, username, email, bio, image FROM users WHERE id = $1"
 #define SQL_UPDATE_USER "UPDATE users SET email = COALESCE($2, email), username = COALESCE($3, username), password_hash = COALESCE($4, password_hash), bio = COALESCE($5, bio), image = COALESCE($6, image) WHERE id = $1 RETURNING id, username, email, bio, image"
 #define SQL_GET_PROFILE "SELECT u.id, u.username, u.bio, u.image, EXISTS (SELECT 1 FROM follows fo WHERE fo.follower_id = $1 AND fo.followee_id = u.id) AS following FROM users u WHERE u.username = $2"
-#define SQL_GET_PROFILE_USER "SELECT id, username, bio, image FROM users WHERE username = $1"
-#define SQL_INSERT_FOLLOW "INSERT INTO follows (follower_id, followee_id) VALUES ($1, $2) ON CONFLICT DO NOTHING"
-#define SQL_DELETE_FOLLOW "DELETE FROM follows WHERE follower_id = $1 AND followee_id = $2"
 #define SQL_LIST_TAGS "SELECT name FROM tags ORDER BY name"
 
 #endif // SQL_QUERIES_H
